@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boston House Price Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0f11;
+      --surface: #16181c;
+      --border: #2a2d35;
+      --accent: #c8f060;
+      --accent-dim: rgba(200, 240, 96, 0.12);
+      --text: #e8e9ec;
+      --muted: #6b6f7a;
+      --input-bg: #1c1f26;
+      --red: #ff6b6b;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(200,240,96,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,240,96,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 620px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,240,96,0.05);
+      animation: rise 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Glowing top bar */
+    .card::before {
+      content: '';
+      display: block;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .header {
+      padding: 36px 40px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-tag {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text);
+    }
+
+    .header h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .header p {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    form {
+      padding: 32px 40px 36px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeIn 0.5s both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .field:nth-child(1)  { animation-delay: 0.05s; }
+    .field:nth-child(2)  { animation-delay: 0.08s; }
+    .field:nth-child(3)  { animation-delay: 0.11s; }
+    .field:nth-child(4)  { animation-delay: 0.14s; }
+    .field:nth-child(5)  { animation-delay: 0.17s; }
+    .field:nth-child(6)  { animation-delay: 0.20s; }
+    .field:nth-child(7)  { animation-delay: 0.23s; }
+    .field:nth-child(8)  { animation-delay: 0.26s; }
+    .field:nth-child(9)  { animation-delay: 0.29s; }
+    .field:nth-child(10) { animation-delay: 0.32s; }
+    .field:nth-child(11) { animation-delay: 0.35s; }
+    .field:nth-child(12) { animation-delay: 0.38s; }
+    .field:nth-child(13) { animation-delay: 0.41s; }
+
+    label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .label-hint {
+      font-size: 9px;
+      color: var(--border);
+      letter-spacing: 0;
+      text-transform: none;
+      font-weight: 300;
+      margin-top: 1px;
+    }
+
+    input[type="text"] {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      padding: 10px 13px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+
+    input[type="text"]::placeholder {
+      color: #3a3f4a;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      background: rgba(200,240,96,0.04);
+      box-shadow: 0 0 0 3px rgba(200,240,96,0.08);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--accent);
+      color: #0e0f11;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.12);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(200,240,96,0.25);
+    }
+
+    .btn:hover::after { opacity: 1; }
+    .btn:active { transform: translateY(0); filter: brightness(0.96); }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .result {
+      margin: 0 40px 32px;
+      padding: 18px 20px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200,240,96,0.25);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--accent);
+      line-height: 1.6;
+    }
+
+    .result:empty { display: none; }
+
+    .footer-note {
+      padding: 16px 40px;
+      border-top: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: 1fr; }
+      .header, form { padding-left: 24px; padding-right: 24px; }
+      .result { margin-left: 24px; margin-right: 24px; }
+      .footer-note { padding-left: 24px; padding-right: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="header">
+    <div class="header-tag">ML Regression Model · v1.0</div>
+    <h1>Boston House<br><em>Price Prediction</em></h1>
+    <p>Enter the 13 feature values below to receive an estimated property value from the trained model.</p>
+  </div>
+
+  <form action="{{ url_for('predict') }}" method="post">
+    <div class="grid">
+
+      <div class="field">
+        <label for="CRIM">CRIM</label>
+        <input type="text" id="CRIM" name="CRIM" placeholder="0.00632" required />
+      </div>
+
+      <div class="field">
+        <label for="ZN">ZN</label>
+        <input type="text" id="ZN" name="ZN" placeholder="18.0" required />
+      </div>
+
+      <div class="field">
+        <label for="INDUS">INDUS</label>
+        <input type="text" id="INDUS" name="INDUS" placeholder="2.31" required />
+      </div>
+
+      <div class="field">
+        <label for="CHAS">CHAS</label>
+        <input type="text" id="CHAS" name="CHAS" placeholder="0 or 1" required />
+      </div>
+
+      <div class="field">
+        <label for="NOX">NOX</label>
+        <input type="text" id="NOX" name="NOX" placeholder="0.538" required />
+      </div>
+
+      <div class="field">
+        <label for="RM">RM</label>
+        <input type="text" id="RM" name="RM" placeholder="6.575" required />
+      </div>
+
+      <div class="field">
+        <label for="Age">AGE</label>
+        <input type="text" id="Age" name="Age" placeholder="65.2" required />
+      </div>
+
+      <div class="field">
+        <label for="DIS">DIS</label>
+        <input type="text" id="DIS" name="DIS" placeholder="4.09" required />
+      </div>
+
+      <div class="field">
+        <label for="RAD">RAD</label>
+        <input type="text" id="RAD" name="RAD" placeholder="1" required />
+      </div>
+
+      <div class="field">
+        <label for="TAX">TAX</label>
+        <input type="text" id="TAX" name="TAX" placeholder="296.0" required />
+      </div>
+
+      <div class="field">
+        <label for="PTRATIO">PTRATIO</label>
+        <input type="text" id="PTRATIO" name="PTRATIO" placeholder="15.3" required />
+      </div>
+
+      <div class="field">
+        <label for="B">B</label>
+        <input type="text" id="B" name="B" placeholder="396.9" required />
+      </div>
+
+      <div class="field">
+        <label for="LSTAT">LSTAT</label>
+        <input type="text" id="LSTAT" name="LSTAT" placeholder="4.98" required />
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <button type="submit" class="btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4l3 3"/>
+      </svg>
+      Run Prediction
+    </button>
+  </form>
+
+  <div class="result">{{ prediction_text }}</div>
+
+  <div class="footer-note">Boston Housing Dataset · 13 features · Linear Regression</div>
+
+</div>
+
+</body>
+</html>
